@@ -310,7 +310,7 @@ function say(msg: string) {
   status.hidden = !msg
 }
 
-async function useFile(file: Blob) {
+async function useFile(file: Blob, demo?: string) {
   try {
     say('Reading image…')
     let bmp = await createImageBitmap(file)
@@ -339,7 +339,7 @@ async function useFile(file: Blob) {
     rebuild(true)
     say('')
     try {
-      currentId = await addSaved({ created: Date.now(), cutout: cutBlob, thumb: await thumbnail(), settings: getSettings() })
+      currentId = await addSaved({ created: Date.now(), cutout: cutBlob, thumb: await thumbnail(), settings: getSettings(), demo })
       await renderShelf()
     } catch (err) {
       console.warn('could not save sticker', err)
@@ -493,7 +493,11 @@ async function renderShelf() {
 // ── go ────────────────────────────────────────────────────────────────────
 layout()
 requestAnimationFrame(frame)
-// reopen the latest saved sticker, or start from the demo
+// always open on the example sticker; it's cut once, then kept on the shelf
+const DEMO = 'jelly-cody'
 renderShelf()
   .catch(() => [] as Saved[])
-  .then((recs) => (recs.length ? openSaved(recs[0]) : fetch('/demo.png').then((r) => r.blob()).then(useFile)))
+  .then((recs) => {
+    const demo = recs.find((r) => r.demo === DEMO)
+    return demo ? openSaved(demo) : fetch('/demo.png').then((r) => r.blob()).then((b) => useFile(b, DEMO))
+  })

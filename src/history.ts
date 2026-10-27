@@ -17,6 +17,7 @@ export interface Saved {
   cutout: Blob
   thumb: Blob
   settings: Settings
+  demo?: string // set on the built-in example sticker
 }
 
 const DB = 'holo-sticker'
