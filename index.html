@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Holo Sticker</title>
+  </head>
+  <body>
+    <canvas id="gl"></canvas>
+
+    <nav id="shelf" aria-label="Saved stickers" hidden></nav>
+
+    <div class="panel">
+      <label class="btn primary">
+        Upload photo
+        <input id="file" type="file" accept="image/*" hidden />
+      </label>
+      <div class="group">
+        <span>Cut</span>
+        <div class="seg">
+          <button data-cut="angular" aria-pressed="true">Angular</button>
+          <button data-cut="smooth" aria-pressed="false">Smooth</button>
+        </div>
+      </div>
+      <div class="group">
+        <span>Rim</span>
+        <div class="seg">
+          <button data-rim="holo" aria-pressed="true">Holo</button>
+          <button data-rim="white" aria-pressed="false">White</button>
+        </div>
+      </div>
+      <button id="mono" class="btn toggle" aria-pressed="false">B&amp;W</button>
+      <label class="group">
+        <span>Border</span>
+        <input id="border" type="range" min="0.015" max="0.09" step="0.005" value="0.045" />
+      </label>
+      <label class="group">
+        <span>Shards</span>
+        <input id="shards" type="range" min="0" max="1" step="0.01" value="0" />
+      </label>
+      <label class="group">
+        <span>Holo on photo</span>
+        <input id="holo" type="range" min="0" max="1" step="0.01" value="0.3" />
+      </label>
+      <button id="save" class="btn">Save PNG</button>
+    </div>
+
+    <p class="hint">Drop or paste a photo · drag the sticker to peel it</p>
+    <div id="status" hidden></div>
+    <div id="drop" hidden><span>Drop to make a sticker</span></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
