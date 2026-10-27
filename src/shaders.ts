@@ -178,8 +178,8 @@ void main() {
     return;
   }
 
-  // table
-  vec3 col = vec3(0.16, 0.16, 0.165) * (1.0 - 0.45 * dot(sp, sp));
+  // table: flat, same as the page's --bg
+  vec3 col = vec3(0.157, 0.157, 0.161);
 
   // the lifted flap's shadow, falling down and right, softer as it rises
   float fs = 0.0;
@@ -217,6 +217,5 @@ void main() {
     }
   }
 
-  col += (hash(p + fract(uTime) * 61.0) - 0.5) * 0.025;
   outColor = vec4(col, 1.0);
 }`
