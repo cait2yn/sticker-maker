@@ -84,7 +84,7 @@ function upload(s: Sticker) {
 type V = [number, number]
 let sticker: Sticker | null = null
 let cutout: ImageBitmap | null = null
-let cut: Cut = 'angular'
+let cut: Cut = 'smooth'
 let white = false
 let mono = false
 let dpr = 1
@@ -494,10 +494,11 @@ async function renderShelf() {
 layout()
 requestAnimationFrame(frame)
 // always open on the example sticker; it's cut once, then kept on the shelf
-const DEMO = 'jelly-cody'
+const DEMO = 'jelly-cody-2' // bump when the example's defaults change
 renderShelf()
   .catch(() => [] as Saved[])
   .then((recs) => {
     const demo = recs.find((r) => r.demo === DEMO)
+    for (const r of recs) if (r.demo && r.demo !== DEMO) removeSaved(r.id)
     return demo ? openSaved(demo) : fetch('/demo.png').then((r) => r.blob()).then((b) => useFile(b, DEMO))
   })
