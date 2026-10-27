@@ -18,6 +18,7 @@ export interface Sticker {
 const MAX_SUBJECT = 1600 // longest side of the subject in the texture
 const LOW = 640 // longest side of the working grid for distance fields
 const INF = 1e20
+const ROUND = 1.0 // angular cut: corner radius, as a share of the border
 
 export function buildSticker(src: CanvasImageSource & { width: number; height: number }, border: number, cut: Cut): Sticker {
   // 1. crop to the subject
@@ -78,7 +79,7 @@ export function buildSticker(src: CanvasImageSource & { width: number; height: n
     shapeLow.fill(0)
     const pl = canvas(lw, lh)
     const plc = pl.getContext('2d', { willReadFrequently: true })!
-    fillPolys(plc, polys.map((p) => p.map(([x, y]) => [x + 0.5, y + 0.5] as [number, number])), 1)
+    fillPolys(plc, polys.map((p) => p.map(([x, y]) => [x + 0.5, y + 0.5] as [number, number])), 1, ROUND * Bl)
     const pd = plc.getImageData(0, 0, lw, lh).data
     for (let i = 0; i < shapeLow.length; i++) shapeLow[i] = pd[i * 4 + 3] > 127 || out[i] <= grow ? 1 : 0
   }
@@ -88,7 +89,7 @@ export function buildSticker(src: CanvasImageSource & { width: number; height: n
   let poly: Uint8ClampedArray | null = null
   if (polys.length) {
     const pc2 = canvas(w, h).getContext('2d', { willReadFrequently: true })!
-    fillPolys(pc2, polys.map((p) => p.map(([x, y]) => [(x + 0.5) / fx, (y + 0.5) / fy] as [number, number])), 1)
+    fillPolys(pc2, polys.map((p) => p.map(([x, y]) => [(x + 0.5) / fx, (y + 0.5) / fy] as [number, number])), 1, (ROUND * Bl) / fx)
     poly = pc2.getImageData(0, 0, w, h).data
   }
   const holes = new Uint8Array(lw * lh)
@@ -318,11 +319,25 @@ function rdp(pts: [number, number][], eps: number): [number, number][] {
   return [...l.slice(0, -1), ...r]
 }
 
-function fillPolys(c: CanvasRenderingContext2D, polys: [number, number][][], scale: number) {
+// r > 0 rounds every corner with an arc of that radius (in output px),
+// shrunk where the neighbouring edges are too short to fit it
+function fillPolys(c: CanvasRenderingContext2D, polys: [number, number][][], scale: number, r = 0) {
   c.fillStyle = '#fff'
   c.beginPath()
   for (const p of polys) {
-    p.forEach(([x, y], i) => (i ? c.lineTo(x * scale, y * scale) : c.moveTo(x * scale, y * scale)))
+    const q = p.map(([x, y]) => [x * scale, y * scale] as [number, number])
+    if (r <= 0 || q.length < 3) {
+      q.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)))
+    } else {
+      const n = q.length
+      const len = (a: [number, number], b: [number, number]) => Math.hypot(b[0] - a[0], b[1] - a[1])
+      const [ax, ay] = q[n - 1], [bx, by] = q[0]
+      c.moveTo((ax + bx) / 2, (ay + by) / 2)
+      for (let i = 0; i < n; i++) {
+        const a = q[(i - 1 + n) % n], v = q[i], b = q[(i + 1) % n]
+        c.arcTo(v[0], v[1], b[0], b[1], Math.min(r, 0.5 * len(a, v), 0.5 * len(v, b)))
+      }
+    }
     c.closePath()
   }
   c.fill('nonzero')

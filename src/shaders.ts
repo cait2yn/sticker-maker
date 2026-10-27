@@ -141,6 +141,9 @@ vec3 front(vec2 uv, vec3 macroN, vec2 sp, float lit) {
   vec3 printed = mix(ink, 1.0 - (1.0 - ink) * (1.0 - tint), uHolo) + spark * 0.35 * uHolo;
   vec3 col = mix(film, printed, a.a);
   col += 0.1 * smoothstep(0.8, 1.1, g) * a.a;
+  // glossy laminate over everything: one crisp streak and a thinner echo
+  float gt = dot(view, normalize(vec2(0.9, 0.45)));
+  col += 0.2 * exp(-sq((gt - 0.16) / 0.06)) + 0.08 * exp(-sq((gt + 0.08) / 0.025));
   return col * lit;
 }
 
